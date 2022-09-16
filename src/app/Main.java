@@ -26,7 +26,7 @@ public class Main {
         SecretKey secretKey = generateKey();
         IvParameterSpec iv = generateIV();
 
-        String encrypted = encrypt(scanner.next(), secretKey, iv);
+        String encrypted = encrypt(scanner.nextLine(), secretKey, iv);
         String decrypted = decrypt(encrypted, secretKey, iv);
 
         out.println(encrypted);
