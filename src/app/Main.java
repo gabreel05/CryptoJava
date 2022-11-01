@@ -1,6 +1,7 @@
 package app;
 
 import javax.crypto.*;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
@@ -15,8 +16,13 @@ import static java.lang.System.*;
 
 public class Main {
 
+    public static final int TAG_LENGTH_BIT = 128;
+    public static final int IV_LENGTH_BYTE = 16;
+
+    private Main() {}
+
     public static final String AES = "AES";
-    public static final String AES_CBC_PKCS_5_PADDING = "AES/CBC/PKCS5PADDING";
+    public static final String AES_GCM_NoPadding = "AES/GCM/NoPadding";
 
     public static void main(String[] args)
             throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException,
@@ -24,7 +30,7 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
 
         SecretKey secretKey = generateKey();
-        IvParameterSpec iv = generateIV();
+        GCMParameterSpec iv = generateIV();
 
         String encrypted = encrypt(scanner.nextLine(), secretKey, iv);
         String decrypted = decrypt(encrypted, secretKey, iv);
@@ -39,27 +45,27 @@ public class Main {
         return new SecretKeySpec(bytes, AES);
     }
 
-    private static IvParameterSpec generateIV() {
-        byte[] bytes = new byte[16];
+    private static GCMParameterSpec generateIV() {
+        byte[] bytes = new byte[IV_LENGTH_BYTE];
         new SecureRandom().nextBytes(bytes);
-        return new IvParameterSpec(bytes);
+        return new GCMParameterSpec(TAG_LENGTH_BIT, bytes);
     }
 
-    private static Cipher generateCipher(int encryptMode, SecretKey key, IvParameterSpec iv)
+    private static Cipher generateCipher(int encryptMode, SecretKey key, GCMParameterSpec iv)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, InvalidAlgorithmParameterException {
-        Cipher cipher = Cipher.getInstance(AES_CBC_PKCS_5_PADDING);
+        Cipher cipher = Cipher.getInstance(AES_GCM_NoPadding);
         cipher.init(encryptMode, key, iv);
         return cipher;
     }
 
-    private static String encrypt(String message, SecretKey key, IvParameterSpec iv)
+    private static String encrypt(String message, SecretKey key, GCMParameterSpec iv)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException,
             IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
         byte[] bytes = generateCipher(Cipher.ENCRYPT_MODE, key, iv).doFinal(message.getBytes(StandardCharsets.UTF_8));
         return Base64.getEncoder().encodeToString(bytes);
     }
 
-    private static String decrypt(String message, SecretKey key, IvParameterSpec iv)
+    private static String decrypt(String message, SecretKey key, GCMParameterSpec iv)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException,
             IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
         byte[] bytes = generateCipher(Cipher.DECRYPT_MODE, key, iv).doFinal(Base64.getDecoder().decode(message));
