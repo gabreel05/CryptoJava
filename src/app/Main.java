@@ -2,7 +2,6 @@ package app;
 
 import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
@@ -16,13 +15,17 @@ import static java.lang.System.*;
 
 public class Main {
 
-    public static final int TAG_LENGTH_BIT = 128;
-    public static final int IV_LENGTH_BYTE = 16;
-
     private Main() {}
 
     public static final String AES = "AES";
+
     public static final String AES_GCM_NoPadding = "AES/GCM/NoPadding";
+
+    public static final int TAG_LENGTH = 128;
+
+    public static final int IV_LENGTH = 16;
+
+    public static final int KEY_LENGTH = 16;
 
     public static void main(String[] args)
             throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException,
@@ -40,15 +43,15 @@ public class Main {
     }
 
     private static SecretKey generateKey() {
-        byte[] bytes = new byte[16];
+        byte[] bytes = new byte[KEY_LENGTH];
         new SecureRandom().nextBytes(bytes);
         return new SecretKeySpec(bytes, AES);
     }
 
     private static GCMParameterSpec generateIV() {
-        byte[] bytes = new byte[IV_LENGTH_BYTE];
+        byte[] bytes = new byte[IV_LENGTH];
         new SecureRandom().nextBytes(bytes);
-        return new GCMParameterSpec(TAG_LENGTH_BIT, bytes);
+        return new GCMParameterSpec(TAG_LENGTH, bytes);
     }
 
     private static Cipher generateCipher(int encryptMode, SecretKey key, GCMParameterSpec iv)
